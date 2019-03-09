@@ -4,6 +4,6 @@ import TrafficSim.Car;
 
 public interface Drawable {
 	
-	public void draw(double transform_x, double transform_y, Graphics2D g2d);
+	public void draw(Graphics2D g2d);
 
 }

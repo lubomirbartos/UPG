@@ -4,13 +4,17 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics2D;
+import java.awt.GridBagLayout;
 import java.awt.LayoutManager;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import TrafficSim.Car;
 import TrafficSim.CrossRoad;
@@ -25,13 +29,8 @@ public class Main extends JFrame {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private double model_width;
-	private double model_height;
-	private double window_width = 500;
-	private double window_height = 500;
-	private static Model  model;
-	double transform_x; // timhle budeme nasobit souradnice modelu ze simulatoru
-	double transform_y;
+		
+	// TODO set min and max size of window
 
 
 	public static void main(String[] args) {
@@ -39,21 +38,26 @@ public class Main extends JFrame {
 		//check arguments
 		// create Simulator
 		Simulator simulator = new Simulator();
-		Scenario scenario = new Scenario(simulator);
-		simulator.addScenario(scenario);
+		Scenario scenario1 = new Scenario(simulator);
+		scenario1.create();
+		Scenario scenario2 = new Scenario(simulator);
+		scenario2.create();
+		simulator.addScenario(scenario1);
+		simulator.addScenario(scenario2);
 		String[] scenarios = simulator.getScenarios();
 		System.out.println(scenarios[0]);
-		simulator.runScenario(scenarios[0]);
+		simulator.runScenario(scenario1.getId());
 		new Main(simulator);
+
 		return;
 	}
 
 	private Main(Simulator simulator) {
 		super("Crossroad");
-		setSize((int) window_width, (int) window_height);
 		BorderLayout layout = new BorderLayout();
 		setLayout(layout);
 		setLocationRelativeTo(null);
+	
 		setVisible(true);
 		addWindowListener(new WindowAdapter()
 			{public void windowClosing(WindowEvent e)
@@ -61,37 +65,27 @@ public class Main extends JFrame {
 			}
 		);
 		
-		Cars cars = new Cars(simulator.getCars());
-		Roads roads = new Roads(simulator.getRoadSegments(), simulator.getCrossroads());
-		model = new Model(roads, cars, transform_x, transform_y);
-		add(model);
+		computeModelDimensions(simulator);
 
+		Traffic traffic = new Traffic(simulator.getRoadSegments(), simulator.getCrossroads(), simulator.getCars());
+		traffic.setPreferredSize(new Dimension((int) View.window_width, (int) View.window_height));
+		add(traffic, 0);
+		pack();
+		setSize((int) View.window_width, (int) View.window_height);
+		setPreferredSize(new Dimension((int) View.window_width, (int) View.window_height));
+		
 		while(true) {
 
 			computeModelDimensions(simulator);
+			traffic.update(simulator.getRoadSegments(), simulator.getCrossroads(), simulator.getCars());
+			traffic.repaint();
 			
-			
-	//		computeModel2WindowTransformation(width, height); //height and width from window?
-	
-			cars = new Cars(simulator.getCars());
-			roads = new Roads(simulator.getRoadSegments(), simulator.getCrossroads());
-			model.update(roads, cars, transform_x, transform_y);
-
-			pack();
-			setSize((int) window_width, (int) window_height);
-		
 			try {
-				TimeUnit.MILLISECONDS.sleep(200);
+				TimeUnit.MILLISECONDS.sleep(100);
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
 			simulator.nextStep(1);
-			cars = new Cars(simulator.getCars());
-			roads = new Roads(simulator.getRoadSegments(), simulator.getCrossroads());
-
-//			model = new Model(roads, cars, transform_x, transform_y);
-//			model.update(roads, cars, transform_x, transform_y);
-			repaint();
 		}
 
 	}
@@ -101,85 +95,82 @@ public class Main extends JFrame {
 	private void computeModelDimensions(Simulator simulator) {
 		double maximum_x = 0;
 		double maximum_y = 0;
+				
+		maximum_x = get_max_car_x(simulator.getCars());
+		if (maximum_x > View.model_width) {
+			View.model_width = maximum_x;
+		}
+		maximum_y = get_max_car_y(simulator.getCars());
+		if (maximum_y > View.model_height) {
+			View.model_height = maximum_y;
+		}
+		maximum_x = get_max_road_x(simulator.getRoadSegments());
+		if (maximum_x > View.model_width) {
+			View.model_width = maximum_x;
+		}
+		maximum_y = get_max_road_y(simulator.getRoadSegments());
+		if (maximum_y > View.model_height) {
+			View.model_height = maximum_y;
+		}
 		
-		// najdi nejvzdalenejsi auto X
-		// najdi nejvzdalenejsi auto Y
-		for (Car car : simulator.getCars()) {
-			if (car.getPosition().getX() > maximum_x) {
-				maximum_x = car.getPosition().getX();				
+		View.transform_x = this.getWidth()/View.model_width;
+		View.transform_y = this.getHeight()/View.model_height;
+		
+
+		if (View.transform_x < View.transform_y) {
+			View.transform = View.transform_x;
+//			View.offset_y = (this.getHeight() - View.model_width * View.transform)/2;
+		} else {
+			View.transform = View.transform_y;
+//			View.offset_x = (this.getWidth() - View.model_height * View.transform)/2;
+		}
+
+	}
+
+	private double get_max_road_y(RoadSegment[] roadSegments) {
+		double max_y = 0;
+		for (RoadSegment road : roadSegments) {
+			if (road.getStartPosition().getY() > max_y) {
+				max_y = road.getStartPosition().getY();				
 			}
-			if (car.getPosition().getY() > maximum_y) {
-				maximum_y = car.getPosition().getY();				
+			if (road.getEndPosition().getY() > max_y) {
+				max_y = road.getEndPosition().getY();				
+			}
+		}
+		return max_y;
+	}
+
+	private double get_max_car_y(Car[] cars) {
+		double max_y = 0;
+		for (Car car : cars) {
+			if (car.getPosition().getY() > max_y) {
+				max_y = car.getPosition().getY();				
 			}			
 		}
-		// najdi nejvzdalenejsi silnici X      => model width, height
-		// najdi nejvzdalenejsi silnici Y
-		for (RoadSegment road : simulator.getRoadSegments()) {
-			if (road.getStartPosition().getX() > maximum_x || road.getEndPosition().getX() > maximum_x) {
-				maximum_x = road.getStartPosition().getX();				
+		return max_y;
+	}
+
+	private double get_max_road_x(RoadSegment[] roadSegments) {
+		double max_x = 0;
+		for (RoadSegment road : roadSegments) {
+			if (road.getStartPosition().getX() > max_x) {
+				max_x = road.getStartPosition().getX();				
 			}
-			if (road.getStartPosition().getY() > maximum_y || road.getEndPosition().getY() > maximum_y) {
-				maximum_y = road.getStartPosition().getY();				
+			if (road.getEndPosition().getX() > max_x) {
+				max_x = road.getEndPosition().getX();				
 			}
 		}
-		// najdi nejvzdalenejsi krizovatku X    ... mozna neni potreba
-		// najdi nejvzdalenejsi krizovatku Y
-		
-		
-		model_width = maximum_x;
-		model_height = maximum_y;
-		
-		
-		// get window width and height
-		window_width = getBounds().getSize().getWidth();
-		window_height = getBounds().getSize().getHeight();
-
-		// transform model to window
-		
-		transform_x = (window_width * 0.5) / model_width;
-		transform_y = (window_height * 0.5) / model_height;
+		return max_x;
 	}
 
-	private static void computeModel2WindowTransformation(int width, int height) {
-		
-	}
-
-	private static Point2D model2window(Model model) {
-		return new Point2D.Float();
-	}
+	private double get_max_car_x(Car[] cars) {
+		double max_x = 0;
+		for (Car car : cars) {
+			if (car.getPosition().getX() > max_x) {
+				max_x = car.getPosition().getX();				
+			}
+		}
+		return max_x;
+	}	
 	
-	private static void drawCar(Point2D position, double orientation, int lenght, int width, Graphics2D g) {
-		
-	}
-	
-	private static void drawLane(Point2D start, Point2D end, int size, Graphics2D g) {
-		
-	}
-	
-	private static void drawRoadSegment(RoadSegment road, Graphics2D g) {
-		
-	}
-	
-	private static void drawCrossRoad(CrossRoad cr, Graphics2D g) {
-		
-	}
-	
-
-
-//	private static void drawCars(Cars cars, Graphics2D g) {
-//		
-//		Cars car;
-//		for(Car car : cars){
-//			drawCar(position, orientation, lenght, width, g);
-//			
-//		}
-//	}
-//
-//	private static void drawTrafficState(Simulator sim, Graphics2D g) {
-//		drawCars(cars);
-//		drawLane(start, end, size, g);
-//		drawRoadSegment(road, g);
-//		drawCrossRoad(cr, g);
-//		
-//	}
 }
