@@ -4,8 +4,8 @@ public class View {
 	public static double model_width = 0;
 	public static double model_height = 0;
 	
-	public static double window_width = 500;
-	public static double window_height = 500;
+	public static double window_width = 1000;
+	public static double window_height = 1000;
 
 	public static double transform_x = 1; // timhle budeme nasobit souradnice modelu ze simulatoru
 	public static double transform_y = 1;

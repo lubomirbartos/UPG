@@ -6,6 +6,8 @@ import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
 import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
@@ -15,6 +17,7 @@ import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import TrafficSim.Car;
 import TrafficSim.CrossRoad;
@@ -40,12 +43,12 @@ public class Main extends JFrame {
 		Simulator simulator = new Simulator();
 		Scenario scenario1 = new Scenario(simulator);
 		scenario1.create();
-		Scenario scenario2 = new Scenario(simulator);
-		scenario2.create();
 		simulator.addScenario(scenario1);
-		simulator.addScenario(scenario2);
 		String[] scenarios = simulator.getScenarios();
-		System.out.println(scenarios[0]);
+		for (String scenario : scenarios) {
+			
+			System.out.println(scenario);
+		}
 		simulator.runScenario(scenario1.getId());
 		new Main(simulator);
 
@@ -53,10 +56,9 @@ public class Main extends JFrame {
 	}
 
 	private Main(Simulator simulator) {
-		super("Crossroad");
+		super("Traffic");
 		BorderLayout layout = new BorderLayout();
 		setLayout(layout);
-		setLocationRelativeTo(null);
 	
 		setVisible(true);
 		addWindowListener(new WindowAdapter()
@@ -73,12 +75,21 @@ public class Main extends JFrame {
 		pack();
 		setSize((int) View.window_width, (int) View.window_height);
 		setPreferredSize(new Dimension((int) View.window_width, (int) View.window_height));
+		setLocationRelativeTo(null);
+		
+		Timer timer  = new Timer(100, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				repaint();		
+			}
+		});
+		timer.start();
+
 		
 		while(true) {
 
 			computeModelDimensions(simulator);
 			traffic.update(simulator.getRoadSegments(), simulator.getCrossroads(), simulator.getCars());
-			traffic.repaint();
 			
 			try {
 				TimeUnit.MILLISECONDS.sleep(100);
@@ -113,8 +124,8 @@ public class Main extends JFrame {
 			View.model_height = maximum_y;
 		}
 		
-		View.transform_x = this.getWidth()/View.model_width;
-		View.transform_y = this.getHeight()/View.model_height;
+		View.transform_x = this.getWidth()/(View.model_width + 20);
+		View.transform_y = this.getHeight()/(View.model_height + 20);
 		
 
 		if (View.transform_x < View.transform_y) {
