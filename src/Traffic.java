@@ -88,9 +88,7 @@ public class Traffic extends JComponent {
 		Line2D line;
 
 		
-		if (end.getY() == start.getY()) {
-			horizontal = true;			
-		}
+		horizontal = is_road_horizontal(start, end);
 		
 		
 		if (horizontal == true) {	
@@ -173,160 +171,19 @@ public class Traffic extends JComponent {
 	    }		
 	}
 	
-	private void drawCrossRoad(CrossRoad crossRoad, Graphics2D g2d) {
-		RoadSegment[] roads = crossRoad.getRoads();
-
-		for (int i = 0; i < roads.length; i++) {
-			Point2D end = roads[i].getEndPosition();
-			Point2D start = roads[i].getStartPosition();
-			boolean horizontal = true;
-			
-			if (end.getX() == start.getX()) {
-				horizontal = false;			
-			}
-
-			
-			int backwardLanesCount = roads[i].getBackwardLanesCount();
-			int forwardLanesCount = roads[i].getForwardLanesCount();
-			int lanesCount = backwardLanesCount + forwardLanesCount;
-			double laneWidth = roads[i].getLaneWidth();
-			double laneSeparatorWidth = roads[i].getLaneSeparatorWidth();
-			double roadWidth = (laneWidth * lanesCount + laneSeparatorWidth * (lanesCount ));
-
-//			if (horizontal) {
-//				endPointPositionsX[i] = View.x(roads[i].getEndPointPosition(endpoints[i]).getX());		
-//				endPointPositionsX[i] = View.x(roads[i].getEndPointPosition(endpoints[i]).getX());		
-//				endPointPositionsY[i] = View.y(roads[i].getEndPointPosition(endpoints[i]).getY() - roadWidth);		
-//				endPointPositionsY[i] = View.y(roads[i].getEndPointPosition(endpoints[i]).getY() + roadWidth);						
-//			} else {
-//				endPointPositionsX[i] = View.x(roads[i].getEndPointPosition(endpoints[i]).getX() - roadWidth);		
-//				endPointPositionsX[i] = View.x(roads[i].getEndPointPosition(endpoints[i]).getX() + roadWidth);		
-//				endPointPositionsY[i] = View.y(roads[i].getEndPointPosition(endpoints[i]).getY());		
-//				endPointPositionsY[i] = View.y(roads[i].getEndPointPosition(endpoints[i]).getY());						
-//			}
-//			System.out.println(roadWidth);
-			
-//			switch(i) {
-//			case 0:
-//				endPointPositionsX[2*i] = View.x(roads[i].getEndPointPosition(EndPoint.END).getX());		
-//				endPointPositionsX[2*i + 1] = View.x(roads[i].getEndPointPosition(EndPoint.END).getX());		
-//				endPointPositionsY[2*i] = View.y(roads[i].getEndPointPosition(EndPoint.END).getY() + roadWidth/2);		
-//				endPointPositionsY[2*i + 1] = View.y(roads[i].getEndPointPosition(EndPoint.END).getY() - roadWidth/2);						
-//				break;
-//			case 1:
-//				endPointPositionsX[2*i] = View.x(roads[i].getEndPointPosition(EndPoint.END).getX() - roadWidth/2);		
-//				endPointPositionsX[2*i + 1] = View.x(roads[i].getEndPointPosition(EndPoint.END).getX() + roadWidth/2);		
-//				endPointPositionsY[2*i] = View.y(roads[i].getEndPointPosition(EndPoint.END).getY());		
-//				endPointPositionsY[2*i + 1] = View.y(roads[i].getEndPointPosition(EndPoint.END).getY());						
-//				break;
-//			case 2:
-//				endPointPositionsX[2*i] = View.x(roads[i].getEndPointPosition(EndPoint.START).getX());		
-//				endPointPositionsX[2*i + 1] = View.x(roads[i].getEndPointPosition(EndPoint.START).getX());		
-//				endPointPositionsY[2*i] = View.y(roads[i].getEndPointPosition(EndPoint.START).getY() - roadWidth/2);		
-//				endPointPositionsY[2*i + 1] = View.y(roads[i].getEndPointPosition(EndPoint.START).getY() + roadWidth/2);						
-//				break;
-//			case 3:
-//				endPointPositionsX[2*i] = View.x(roads[i].getEndPointPosition(EndPoint.START).getX() + roadWidth/2);		
-//				endPointPositionsX[2*i + 1] = View.x(roads[i].getEndPointPosition(EndPoint.START).getX() - roadWidth/2);		
-//				endPointPositionsY[2*i] = View.y(roads[i].getEndPointPosition(EndPoint.START).getY());		
-//				endPointPositionsY[2*i + 1] = View.y(roads[i].getEndPointPosition(EndPoint.START).getY());						
-//				break;
-//			}
-
+	private boolean is_road_horizontal(Point2D start, Point2D end) {
+		if (start.getY() == end.getY()) {
+			return true;			
 		}
-		
-//		g2d.drawPolygon(endPointPositionsX, endPointPositionsY, 8);
-		
+		return false;
+	}
+
+
+
+	private void drawCrossRoad(CrossRoad crossRoad, Graphics2D g2d) {		
 	    for(Lane lane : crossRoad.getLanes()) { // maybe from 1?
-	    	RoadSegment start_road = lane.getStartRoad();
-	    	RoadSegment end_road = lane.getEndRoad();
-	    	double start_lane_width = start_road.getLaneWidth();
-	    	double end_lane_width = start_road.getLaneWidth();
-	    	int start_lane_number = lane.getStartLaneNumber(); // start position linking to this lane of start road
-	    	int end_lane_number = lane.getEndLaneNumber(); // end position linking to this lane of end road
-	    	double start_posun_x1;
-	    	double start_posun_y1;
-	    	double start_posun_x2;
-	    	double start_posun_y2;
-	    	double end_posun_x1;
-	    	double end_posun_y1;
-	    	double end_posun_x2;
-	    	double end_posun_y2;
-	    	Point2D start_position;
-	    	Point2D end_position;
-	    	
-			int[] lanePositionsX = new int[4];
-			int[] lanePositionsY = new int[4];
-
-	    	boolean start_road_horizontal = false;
-	    	boolean end_road_horizontal = false;
-	    	
-	    	if (start_road.getEndPosition().getX() == start_road.getStartPosition().getX()) {
-	    		start_road_horizontal = true;
-	    	}
-
-	    	if (end_road.getEndPosition().getX() == end_road.getStartPosition().getX()) {
-	    		end_road_horizontal = true;
-	    	}
-	    	
-	    	if (start_road_horizontal) {
-	    		start_posun_x1 = -start_road.getLaneWidth()/2 + (start_road.getLaneWidth() + start_road.getLaneSeparatorWidth())*start_lane_number;
-		    	start_posun_y1 = 0;
-		    	start_posun_x2 = start_posun_x1 + start_lane_width;
-		    	start_posun_y2 = 0;
-	    	} else {
-		    	start_posun_x1 = 0;
-		    	start_posun_y1 = -start_road.getLaneWidth()/2 + (start_road.getLaneWidth() + start_road.getLaneSeparatorWidth())*start_lane_number;
-		    	start_posun_x2 = 0;
-		    	start_posun_y2 = start_posun_y1 + start_lane_width;
-	    	}
-	    	
-	    	if (end_road_horizontal) {
-	    		end_posun_x1 = -end_road.getLaneWidth()/2 + (end_road.getLaneWidth() + end_road.getLaneSeparatorWidth())*end_lane_number;
-	    		end_posun_y1 = 0;
-	    		end_posun_x2 = end_posun_x1 + end_lane_width;
-	    		end_posun_y2 = 0;
-	    	} else {
-		    	end_posun_x1 = 0;
-		    	end_posun_y1 = -end_road.getLaneWidth()/2 + (end_road.getLaneWidth() + end_road.getLaneSeparatorWidth())*end_lane_number;
-		    	end_posun_x2 = 0;
-		    	end_posun_y2 = end_posun_y1 + end_lane_width;
-	    	}
-
-	    	
-	    	if (start_lane_number > 0) {
-	    		//position = startposition
-	    		start_position = start_road.getEndPosition();
-	    	} else {
-	    		//position = endposition
-	    		start_position = start_road.getStartPosition();
-	    	}
-
-	    	lanePositionsX[1] = View.x(start_position.getX() + start_posun_x1);
-    		lanePositionsX[0] = View.x(start_position.getX() + start_posun_x2);
-    		lanePositionsY[1] = View.y(start_position.getY() + start_posun_y1);
-    		lanePositionsY[0] = View.y(start_position.getY() + start_posun_y2);
-
-	    	if (end_lane_number > 0) {
-	    		//position = startposition
-	    		end_position = end_road.getStartPosition();
-	    	} else {
-	    		//position = endposition
-	    		end_position = end_road.getEndPosition();
-	    	}
-
-    		lanePositionsX[3] = View.x(end_position.getX() + end_posun_x1);
-    		lanePositionsX[2] = View.x(end_position.getX() + end_posun_x2);
-    		lanePositionsY[2] = View.y(end_position.getY() + end_posun_y1);
-    		lanePositionsY[3] = View.y(end_position.getY() + end_posun_y2);
-    		
-    		Polygon polygon_line = new Polygon(lanePositionsX, lanePositionsY, 4);
-    		
-    		g2d.drawPolygon(polygon_line);
-//    		g2d.fillPolygon(polygon_line);
-
-	    	
-	    	
+	    	Polygon lane_polygon = get_crossroad_lane_polygon(lane);
+			g2d.drawPolygon(lane_polygon);
 	    }	
 		
 
@@ -334,8 +191,145 @@ public class Traffic extends JComponent {
 //		drawTrafficLights(crossRoad, g2d);
 	}
 	
+	private Polygon get_crossroad_lane_polygon(Lane lane) {
+		
+		int[][] coordinates = get_crossroad_lane_coordinates(lane); // returns x coordinates at [0] and y at [1]
+		return new Polygon(coordinates[0], coordinates[1], 4);		
+
+		
+		
+	}
+
+
+
+	private int[][] get_crossroad_lane_coordinates(Lane lane) {
+		int[][] result = new int[2][4];
+    	Point2D start_position;
+    	Point2D end_position;    	
+		Point2D[] start_posun;
+		Point2D[] end_posun;
+		
+
+    	
+		int[] lanePositionsX = new int[4];
+		int[] lanePositionsY = new int[4];
+
+        	
+    	
+    	start_posun = get_start_point_shifts(lane.getStartRoad(), lane.getStartLaneNumber());
+    	end_posun = get_end_point_shifts(lane.getEndRoad(), lane.getEndLaneNumber());
+    	
+
+    	
+    	
+    	// get end of road position
+    	// get center of line position
+    	// get two desired points on one road - x and y
+    	start_position = get_start_road_position(lane.getStartLaneNumber(), lane.getStartRoad());
+    	end_position = get_end_road_position(lane.getEndLaneNumber(), lane.getEndRoad());
+    	
+    	
+
+    	
+    	double ax = start_position.getX() + start_posun[0].getX();
+    	double bx = start_position.getX() + start_posun[1].getX();
+    	double cx = end_position.getX() + end_posun[0].getX();
+    	double dx = end_position.getX() + end_posun[1].getX();
+    	
+    	double ay = start_position.getY() + start_posun[0].getY();
+    	double by = start_position.getY() + start_posun[1].getY();
+    	double cy = end_position.getY() + end_posun[0].getY();
+    	double dy = end_position.getY() + end_posun[1].getY();
+    	
+//    	result[0] = new Point2D.Double(ax, ay);
+//    	result[1] = new Point2D.Double(bx, by);
+//    	result[2] = new Point2D.Double(cx, cy);
+//    	result[3] = new Point2D.Double(dx, dy);
+
+    	lanePositionsX[0] = View.x(ax);
+		lanePositionsX[1] = View.x(bx);
+		lanePositionsX[2] = View.x(cx);
+		lanePositionsX[3] = View.x(dx);
+
+		lanePositionsY[0] = View.y(ay);
+		lanePositionsY[1] = View.y(by);
+		lanePositionsY[2] = View.y(cy);
+		lanePositionsY[3] = View.y(dy);
+		
+		result[0] = lanePositionsX;
+		result[1] = lanePositionsY;
+		
+		return result;
+	}
+
+
+
+	private Point2D[] get_end_point_shifts(RoadSegment road, int lane_number) {
+		double lane_width = road.getLaneWidth();
+		double separator_width = road.getLaneSeparatorWidth();
+		Point2D[] shifts = new Point2D[2];
+
+    	if (is_road_horizontal(road)) {
+    		shifts[0] = new Point2D.Double(0, -lane_width/2 - (lane_width + separator_width)*lane_number);
+    		shifts[1] = new Point2D.Double(0, shifts[0].getX() + lane_width);
+    	} else {
+    		shifts[0] = new Point2D.Double(-lane_width/2 - (lane_width + separator_width)*lane_number, 0);
+    		shifts[1] = new Point2D.Double(shifts[0].getY() + lane_width, 0);
+    	}
+		return shifts;
+	}
+
+
+
+	private Point2D[] get_start_point_shifts(RoadSegment road, int lane_number) {
+		double lane_width = road.getLaneWidth();
+		double separator_width = road.getLaneSeparatorWidth();
+		Point2D[] shifts = new Point2D[2];
+		
+    	if (is_road_horizontal(road)) {
+    		shifts[0] = new Point2D.Double(0, -lane_width/2 - (lane_width + separator_width)*lane_number);
+    		shifts[1] = new Point2D.Double(0, shifts[0].getX() + lane_width);
+    	} else {
+    		shifts[0] = new Point2D.Double(-lane_width/2 - (lane_width + separator_width)*lane_number, 0);
+    		shifts[1] = new Point2D.Double(0, shifts[0].getY() + lane_width);
+    	}
+		return shifts;
+	}
+
+
+
+	private Point2D get_end_road_position(int end_lane_number, RoadSegment end_road) {
+    	if (end_lane_number > 0) {
+    		//position = startposition
+    		return end_road.getStartPosition();
+    	} else {
+    		//position = endposition
+    		return end_road.getEndPosition();
+    	}
+	}
+
+
+
+	private Point2D get_start_road_position(int start_lane_number, RoadSegment start_road) {
+    	if (start_lane_number > 0) {
+    		//position = startposition
+    		return start_road.getEndPosition();
+    	} else {
+    		//position = endposition
+    		return start_road.getStartPosition();
+    	}
+	}
+
+
+
+	private boolean is_road_horizontal(RoadSegment road) {
+		return is_road_horizontal(road.getStartPosition(), road.getEndPosition());
+	}
+
+
+
 	private void drawCar(Car car, Graphics2D g2d) {
-		double defaultCarSize = 2.0;
+		double defaultCarSize = 2;
 		double orientation = car.getOrientation();
 		double length = car.getLength();
 		Point2D position_front = car.getPosition();
