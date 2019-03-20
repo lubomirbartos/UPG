@@ -62,6 +62,10 @@ public class Traffic extends JComponent {
 		double prepona_y = end.getY() - start.getY(); 
 		double road_length = Math.sqrt(prepona_x*prepona_x + prepona_y*prepona_y);
 		double rotation = Math.atan((prepona_y) / (prepona_x)); 
+		double additional = 0;
+		Rectangle road_shape;
+		Rectangle separator_shape;
+		Line2D line;
 		
 		g2d.setColor(Color.WHITE);
 		g2d.translate(view.x(start.getX()), view.y(start.getY()));
@@ -75,31 +79,44 @@ public class Traffic extends JComponent {
 //		g2d.translate(0, view.scale(separatorWidth + laneWidth - roadWidth)/2);
 
 		// drawing road
-
-
-		Rectangle road_shape = new Rectangle(
-			0,
-			view.scale(separatorWidth + laneWidth - roadWidth)/2,
-			view.scale(road_length),
-			view.scale(roadWidth)
-		);
-
 		g2d.setColor(Color.WHITE);
+
+		if (is_road_horizontal(roadSegment)) {
+			road_shape = new Rectangle(
+					0,
+					view.scale(separatorWidth + laneWidth)/2 - view.scale(roadWidth/2),
+					view.scale(road_length),
+					view.scale(roadWidth)
+				);
+			separator_shape = new Rectangle(
+					0, 
+					view.scale(laneWidth/2),
+					view.scale(road_length), 
+					view.scale(separatorWidth)
+				);
+
+		} else {
+			road_shape = new Rectangle(
+					0,
+					-view.scale(separatorWidth + laneWidth) + view.scale(roadWidth/2),
+					view.scale(road_length),
+					view.scale(roadWidth)
+				);
+			separator_shape = new Rectangle(
+					0, 
+					view.scale(laneWidth),
+					view.scale(road_length), 
+					view.scale(separatorWidth)
+				);
+
+
+
+		}
+
+
+
 		g2d.draw(road_shape);
-		Line2D line = new Line2D.Double(
-				0, 
-				view.scale(laneWidth/2),
-				view.scale(road_length), 
-				view.scale(laneWidth/2)
-		);
-		g2d.draw(line);
-		line = new Line2D.Double(
-				0, 
-				view.scale(laneWidth/2 + separatorWidth),
-				view.scale(road_length), 
-				view.scale(laneWidth/2 + separatorWidth)
-		);
-		g2d.draw(line);
+		g2d.draw(separator_shape);
 
 		g2d.setTransform(old_transform);
 	}
@@ -117,29 +134,39 @@ public class Traffic extends JComponent {
 
 	private void drawCrossRoad(CrossRoad crossRoad, Graphics2D g2d) {		
 	    for(Lane lane : crossRoad.getLanes()) { // maybe from 1?
-			draw_lane(lane, g2d);
+			draw_crossroad_lane(lane, g2d);
 	    }		
 
 		//traffic lights
 //		drawTrafficLights(crossRoad, g2d);
 	}
 	
-	private void draw_lane(Lane lane, Graphics2D g2d) {
+	private void draw_crossroad_lane(Lane lane, Graphics2D g2d) {
 		AffineTransform old_transform = g2d.getTransform();
-		
 
     	Point2D start_position;
     	Point2D end_position;    
        	start_position = get_start_road_position(lane.getStartLaneNumber(), lane.getStartRoad());
     	end_position = get_end_road_position(lane.getEndLaneNumber(), lane.getEndRoad());
-    	Point2D[] start_posun = get_start_point_shifts(lane.getStartRoad(), lane.getStartLaneNumber());
-    	Point2D[] end_posun = get_end_point_shifts(lane.getEndRoad(), lane.getEndLaneNumber());
 
-		double laneWidth = lane.getEndRoad().getLaneWidth();
+
+//    	Point2D[] start_posun = get_start_point_shifts(lane.getStartRoad(), lane.getStartLaneNumber());
+//    	Point2D[] end_posun = get_end_point_shifts(lane.getEndRoad(), lane.getEndLaneNumber());
+
+		double laneWidth = lane.getStartRoad().getLaneWidth()/2;
 		double prepona_x = end_position.getX() - start_position.getX(); 
 		double prepona_y = end_position.getY() - start_position.getY(); 
 		double lane_length = Math.sqrt(prepona_x*prepona_x + prepona_y*prepona_y);
-		double rotation = Math.atan((prepona_y) / (prepona_x)); 
+		double rotation;
+		if (prepona_x < 0 && prepona_y < 0) {
+			rotation = Math.PI - Math.atan((-prepona_y) / (prepona_x)); 			
+		} else if (prepona_x < 0) {
+			rotation = Math.PI - Math.atan((-prepona_y) / (prepona_x)); 			
+		} else if (prepona_y < 0) {
+			rotation = Math.atan((prepona_y) / (prepona_x)); 			
+		} else {
+			rotation = Math.atan((prepona_y) / (prepona_x)); 			
+		}
 		
 //		if (lane.getStartLaneNumber() > 0) {
 			g2d.setColor(Color.WHITE);
@@ -153,11 +180,24 @@ public class Traffic extends JComponent {
 					view.scale(laneWidth)
 				);
 			
-			Line2D testlane = new Line2D.Double(0,0,view.scale(lane_length), 0);
+//			Line2D test_lane = new Line2D.Double(view.x(start_position.getX()),
+//					view.y(start_position.getY()),
+//					view.x(end_position.getX()), 
+//					view.y(end_position.getY()));
+//
+//
+//			g2d.draw(test_lane);
+
+			
+//			Line2D testlane = new Line2D.Double(0,0,view.scale(lane_length), 0);
 
 
-			g2d.draw(testlane);
-//			g2d.draw(lane_rectangle);
+//			g2d.draw(testlane);
+//			g2d.fill(lane_rectangle);
+			g2d.setColor(Color.BLACK);
+			g2d.fill(lane_rectangle);
+			g2d.setColor(Color.WHITE);
+			g2d.draw(lane_rectangle);
 			
 			g2d.setTransform(old_transform);
 
@@ -255,41 +295,70 @@ public class Traffic extends JComponent {
 
 
 
-	private Point2D get_end_road_position(int end_lane_number, RoadSegment end_road) {
-    	if (end_lane_number > 0) {
+	private Point2D get_end_road_position(int lane_number, RoadSegment road) {    	
+		double[] shift;
+		Point2D center;
+		
+    	shift = get_lane_shift(lane_number, road);
+
+
+    	if (lane_number < 0) {
     		//position = startposition
-    		return end_road.getStartPosition();
+    		center = road.getEndPosition();
     	} else {
     		//position = endposition
-    		return end_road.getEndPosition();
+    		center =  road.getStartPosition();
     	}
+    	
+    	return new Point2D.Double(center.getX() + shift[0], center.getY() + shift[1]);
+
 	}
 
 
 
-	private Point2D get_start_road_position(int start_lane_number, RoadSegment start_road) {
-		double lane_width = start_road.getLaneWidth();
-		double shift_x = -lane_width/2 - (lane_width + start_road.getLaneSeparatorWidth())*start_lane_number; // maybe different for each
-		double shift_y = -lane_width/2 - (lane_width + start_road.getLaneSeparatorWidth())*start_lane_number; // maybe different for each
-		Point2D center;
+	private double[] get_lane_shift(int lane_number, RoadSegment end_road) {
+		double lane_width = end_road.getLaneWidth();
+		double shift_x = 0;
+		double shift_y = 0;
+		double additional = 0;
+		
+    	if (lane_number < 0) {
+    		additional = lane_width;
+    	} else {
+    		additional = 0;
+    	}
+
 
 		
-    	if (is_road_horizontal(start_road)) {
-    		shift_x = 0;
-    		shift_y = -lane_width/2 - (lane_width + start_road.getLaneSeparatorWidth())*start_lane_number;
+    	if (is_road_horizontal(end_road)) {
+    		shift_x += 0;
+    		shift_y += (lane_width)*lane_number + lane_width/2 + additional;
     	} else {
-    		shift_x = 0;
-    		shift_y = -lane_width/2 - (lane_width + start_road.getLaneSeparatorWidth())*start_lane_number;
+    		shift_x += (lane_width)*lane_number - lane_width*1.5 + additional;
+    		shift_y += 0;
     	}
+    	double[] result = new double[2];
+    	result[0] = shift_x;
+    	result[1] = shift_y;
+    	return result;
+	}
 
-    	if (start_lane_number > 0) {
+	private Point2D get_start_road_position(int lane_number, RoadSegment road) {
+		double[] shift;
+		Point2D center;
+		
+    	shift = get_lane_shift(lane_number, road);
+
+
+    	if (lane_number > 0) {
     		//position = startposition
-    		center = start_road.getEndPosition();
+    		center = road.getEndPosition();
     	} else {
     		//position = endposition
-    		center =  start_road.getStartPosition();
+    		center =  road.getStartPosition();
     	}
-    	return new Point2D.Double(center.getX() + shift_x, center.getY() + shift_y);
+    	
+    	return new Point2D.Double(center.getX() + shift[0], center.getY() + shift[1]);
 	}
 
 
