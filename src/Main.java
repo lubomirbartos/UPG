@@ -28,6 +28,7 @@ import TrafficSim.Scenarios.Scenario;
 
 public class Main extends JFrame {
 	
+	
 	/**
 	 * 
 	 */
@@ -45,8 +46,7 @@ public class Main extends JFrame {
 		scenario1.create();
 		simulator.addScenario(scenario1);
 		String[] scenarios = simulator.getScenarios();
-		for (String scenario : scenarios) {
-			
+		for (String scenario : scenarios) {			
 			System.out.println(scenario);
 		}
 		simulator.runScenario(scenario1.getId());
@@ -57,86 +57,83 @@ public class Main extends JFrame {
 
 	private Main(Simulator simulator) {
 		super("Traffic");
+		
 		BorderLayout layout = new BorderLayout();
 		setLayout(layout);
 	
-		setVisible(true);
 		addWindowListener(new WindowAdapter()
 			{public void windowClosing(WindowEvent e)
 			     {dispose(); System.exit(0);}
 			}
 		);
 		
-		computeModelDimensions(simulator);
 
-		Traffic traffic = new Traffic(simulator.getRoadSegments(), simulator.getCrossroads(), simulator.getCars());
-		traffic.setPreferredSize(new Dimension((int) View.window_width, (int) View.window_height));
+		Traffic traffic = new Traffic(simulator.getRoadSegments(), simulator.getCrossroads(), simulator.getCars(), computeModelDimensions(simulator));
+		
+		traffic.setPreferredSize(new Dimension((int) traffic.view.get_window_width(), (int) traffic.view.get_window_height()));
+		setSize((int) traffic.view.get_window_width(), (int) traffic.view.get_window_height());
+		setPreferredSize(new Dimension((int) traffic.view.get_window_width(), (int) traffic.view.get_window_height()));
+		
 		add(traffic, 0);
 		pack();
-		setSize((int) View.window_width, (int) View.window_height);
-		setPreferredSize(new Dimension((int) View.window_width, (int) View.window_height));
+		
 		setLocationRelativeTo(null);
+		setVisible(true);
 		
 		Timer timer  = new Timer(100, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				
 				repaint();		
 			}
 		});
+		
 		timer.start();
-
 		
 		while(true) {
-
-			computeModelDimensions(simulator);
 			traffic.update(simulator.getRoadSegments(), simulator.getCrossroads(), simulator.getCars());
-			
+
 			try {
 				TimeUnit.MILLISECONDS.sleep(100);
+				simulator.nextStep(1);
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
-			simulator.nextStep(1);
 		}
 
 	}
 
 	// Computes minimum and maximum values of given model.
 	// Stores model to variable
-	private void computeModelDimensions(Simulator simulator) {
+	private View computeModelDimensions(Simulator simulator) {
 		double maximum_x = 0;
 		double maximum_y = 0;
+		double model_width = 0;
+		double model_height = 0;		
 				
 		maximum_x = get_max_car_x(simulator.getCars());
-		if (maximum_x > View.model_width) {
-			View.model_width = maximum_x;
-		}
-		maximum_y = get_max_car_y(simulator.getCars());
-		if (maximum_y > View.model_height) {
-			View.model_height = maximum_y;
+		if (maximum_x > model_width) {
+			model_width = maximum_x;
 		}
 		maximum_x = get_max_road_x(simulator.getRoadSegments());
-		if (maximum_x > View.model_width) {
-			View.model_width = maximum_x;
+		if (maximum_x > model_width) {
+			model_width = maximum_x;
+		}
+		
+		maximum_y = get_max_car_y(simulator.getCars());
+		if (maximum_y > model_height) {
+			model_height = maximum_y;
 		}
 		maximum_y = get_max_road_y(simulator.getRoadSegments());
-		if (maximum_y > View.model_height) {
-			View.model_height = maximum_y;
+		if (maximum_y > model_height) {
+			model_height = maximum_y;
 		}
 		
-		View.transform_x = this.getWidth()/(View.model_width + 20);
-		View.transform_y = this.getHeight()/(View.model_height + 20);
-		
-
-		if (View.transform_x < View.transform_y) {
-			View.transform = View.transform_x;
-//			View.offset_y = (this.getHeight() - View.model_width * View.transform)/2;
-		} else {
-			View.transform = View.transform_y;
-//			View.offset_x = (this.getWidth() - View.model_height * View.transform)/2;
-		}
-
+		return new View(model_width, model_height);
 	}
+	
+	
+	
 
 	private double get_max_road_y(RoadSegment[] roadSegments) {
 		double max_y = 0;
