@@ -1,3 +1,5 @@
+import TrafficSim.Car;
+import TrafficSim.RoadSegment;
 
 public class View {
 	
@@ -33,6 +35,55 @@ public class View {
 		this.offset_x = 0;
 		this.offset_y = 0;
 	}
+	
+	
+	public static double get_max_road_y(RoadSegment[] roadSegments) {
+		double max_y = 0;
+		for (RoadSegment road : roadSegments) {
+			if (road.getStartPosition().getY() > max_y) {
+				max_y = road.getStartPosition().getY() + road.getLaneWidth() * road.getBackwardLanesCount();				
+			}
+			if (road.getEndPosition().getY() > max_y) {
+				max_y = road.getEndPosition().getY() + road.getLaneWidth() * road.getBackwardLanesCount();				
+			}
+		}
+		return max_y;
+	}
+
+	public static double get_max_car_y(Car[] cars) {
+		double max_y = 0;
+		for (Car car : cars) {
+			if (car.getPosition().getY() > max_y) {
+				max_y = car.getPosition().getY() + car.getLength();				
+			}			
+		}
+		return max_y;
+	}
+
+	public static double get_max_road_x(RoadSegment[] roadSegments) {
+		double max_x = 0;
+		for (RoadSegment road : roadSegments) {
+			if (road.getStartPosition().getX() > max_x) {
+				max_x = road.getStartPosition().getX() + road.getLaneWidth() * road.getBackwardLanesCount();				
+			}
+			if (road.getEndPosition().getX() > max_x) {
+				max_x = road.getEndPosition().getX() + road.getLaneWidth() * road.getBackwardLanesCount();				
+			}
+		}
+		return max_x;
+	}
+
+	public static double get_max_car_x(Car[] cars) {
+		double max_x = 0;
+		for (Car car : cars) {
+			if (car.getPosition().getX() > max_x) {
+				max_x = car.getPosition().getX() + car.getLength();				
+			}
+		}
+		return max_x;
+	}	
+
+	
 	public double get_model_height() {
 		return model_height;
 	}

@@ -14,6 +14,10 @@ import javax.swing.JPanel;
 
 public class DrawingPanel extends JPanel {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	double transform = 1;
 	double offSetX = 0;
 	double offSetY = 0;

@@ -26,36 +26,23 @@ import TrafficSim.Simulator;
 import TrafficSim.TrafficLightState;
 import TrafficSim.Scenarios.Scenario;
 
-public class Main extends JFrame {
+public class TrafficMain extends JFrame {
 	
-	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-		
-	// TODO set min and max size of window
-
 
 	public static void main(String[] args) {
 
-		//check arguments
+		// TODO check arguments
 		// create Simulator
 		Simulator simulator = new Simulator();
-		Scenario scenario1 = new Scenario(simulator);
-		scenario1.create();
-		simulator.addScenario(scenario1);
 		String[] scenarios = simulator.getScenarios();
-		for (String scenario : scenarios) {			
-			System.out.println(scenario);
-		}
-		simulator.runScenario(scenario1.getId());
-		new Main(simulator);
-
+//		simulator.runScenario(scenarios[Integer.parseInt(args[1])]);
+		simulator.runScenario(scenarios[1]);
+		new TrafficMain(simulator);
 		return;
 	}
 
-	private Main(Simulator simulator) {
+	private TrafficMain(Simulator simulator) {
 		super("Traffic");
 		
 		BorderLayout layout = new BorderLayout();
@@ -83,7 +70,6 @@ public class Main extends JFrame {
 		Timer timer  = new Timer(100, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				
 				repaint();		
 			}
 		});
@@ -111,20 +97,20 @@ public class Main extends JFrame {
 		double model_width = 0;
 		double model_height = 0;		
 				
-		maximum_x = get_max_car_x(simulator.getCars());
+		maximum_x = View.get_max_car_x(simulator.getCars());
 		if (maximum_x > model_width) {
 			model_width = maximum_x;
 		}
-		maximum_x = get_max_road_x(simulator.getRoadSegments());
+		maximum_x = View.get_max_road_x(simulator.getRoadSegments());
 		if (maximum_x > model_width) {
 			model_width = maximum_x;
 		}
 		
-		maximum_y = get_max_car_y(simulator.getCars());
+		maximum_y = View.get_max_car_y(simulator.getCars());
 		if (maximum_y > model_height) {
 			model_height = maximum_y;
 		}
-		maximum_y = get_max_road_y(simulator.getRoadSegments());
+		maximum_y = View.get_max_road_y(simulator.getRoadSegments());
 		if (maximum_y > model_height) {
 			model_height = maximum_y;
 		}
@@ -135,50 +121,5 @@ public class Main extends JFrame {
 	
 	
 
-	private double get_max_road_y(RoadSegment[] roadSegments) {
-		double max_y = 0;
-		for (RoadSegment road : roadSegments) {
-			if (road.getStartPosition().getY() > max_y) {
-				max_y = road.getStartPosition().getY();				
-			}
-			if (road.getEndPosition().getY() > max_y) {
-				max_y = road.getEndPosition().getY();				
-			}
-		}
-		return max_y;
-	}
-
-	private double get_max_car_y(Car[] cars) {
-		double max_y = 0;
-		for (Car car : cars) {
-			if (car.getPosition().getY() > max_y) {
-				max_y = car.getPosition().getY();				
-			}			
-		}
-		return max_y;
-	}
-
-	private double get_max_road_x(RoadSegment[] roadSegments) {
-		double max_x = 0;
-		for (RoadSegment road : roadSegments) {
-			if (road.getStartPosition().getX() > max_x) {
-				max_x = road.getStartPosition().getX();				
-			}
-			if (road.getEndPosition().getX() > max_x) {
-				max_x = road.getEndPosition().getX();				
-			}
-		}
-		return max_x;
-	}
-
-	private double get_max_car_x(Car[] cars) {
-		double max_x = 0;
-		for (Car car : cars) {
-			if (car.getPosition().getX() > max_x) {
-				max_x = car.getPosition().getX();				
-			}
-		}
-		return max_x;
-	}	
 	
 }

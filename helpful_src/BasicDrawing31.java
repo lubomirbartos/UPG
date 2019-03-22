@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class BasicDrawing3 {
+public class BasicDrawing31 {
 
     public static void main (String[] args) {
         JFrame frame = new JFrame();
