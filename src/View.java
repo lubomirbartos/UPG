@@ -4,7 +4,6 @@ import TrafficSim.Simulator;
 
 public class View {
 	
-private static final double PADDING = 10;
 /*
  * Here are stored scaling and offset information and methods for x and y transformations.
  */
@@ -34,10 +33,11 @@ private static final double PADDING = 10;
 		this.negative_offset_y = minimum_y;
 	}
 	
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * */
-	/* * * * * * * * TRANSFORMATION METHODS  * * * * * * * */
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * */	
-	
+	/*
+	 * Constructor for view.
+	 * 
+	 * @param Simulator simulator simulator
+	 */
 	public View(Simulator simulator) {
 		this.scale_x = 1;
 		this.scale_y = 1;
@@ -52,6 +52,10 @@ private static final double PADDING = 10;
 		negative_offset_y = find_min_y(simulator);			
 
 	}
+	
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * */
+	/* * * * * * * * TRANSFORMATION METHODS  * * * * * * * */
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * */	
 
 	/*
 	 * Computes window x coordinate from model coordinate.
@@ -142,7 +146,7 @@ private static final double PADDING = 10;
 		if (y < minimum_y) {
 			minimum_y = y;
 		}
-		System.out.println(minimum_y);
+
 		return minimum_y;
 	}
 
@@ -224,10 +228,10 @@ private static final double PADDING = 10;
 		double max_y = 0;
 		for (RoadSegment road : road_segments) {
 			if (road.getStartPosition().getY() > max_y) {
-				max_y = road.getStartPosition().getY() + road.getLaneWidth() * road.getBackwardLanesCount() + PADDING;				
+				max_y = road.getStartPosition().getY() + road.getLaneWidth() * road.getBackwardLanesCount();				
 			}
 			if (road.getEndPosition().getY() > max_y) {
-				max_y = road.getEndPosition().getY() + road.getLaneWidth() * road.getBackwardLanesCount() + PADDING;				
+				max_y = road.getEndPosition().getY() + road.getLaneWidth() * road.getBackwardLanesCount();				
 			}
 		}
 		return max_y;
@@ -245,10 +249,10 @@ private static final double PADDING = 10;
 		double max_x = 0;
 		for (RoadSegment road : road_segments) {
 			if (road.getStartPosition().getX() > max_x) {
-				max_x = road.getStartPosition().getX() + road.getLaneWidth() * road.getBackwardLanesCount() + PADDING;				
+				max_x = road.getStartPosition().getX() + road.getLaneWidth() * road.getBackwardLanesCount();				
 			}
 			if (road.getEndPosition().getX() > max_x) {
-				max_x = road.getEndPosition().getX() + road.getLaneWidth() * road.getBackwardLanesCount() + PADDING;				
+				max_x = road.getEndPosition().getX() + road.getLaneWidth() * road.getBackwardLanesCount();				
 			}
 		}
 		return max_x;
@@ -265,10 +269,10 @@ private static final double PADDING = 10;
 		double min_x = 1000;
 		for (RoadSegment road : road_segments) {
 			if (road.getStartPosition().getX() < min_x) {
-				min_x = road.getStartPosition().getX() - road.getLaneWidth() * road.getBackwardLanesCount() - PADDING;				
+				min_x = road.getStartPosition().getX() - road.getLaneWidth() * road.getBackwardLanesCount();				
 			}
 			if (road.getEndPosition().getX() < min_x) {
-				min_x = road.getEndPosition().getX() - road.getLaneWidth() * road.getBackwardLanesCount() - PADDING;				
+				min_x = road.getEndPosition().getX() - road.getLaneWidth() * road.getBackwardLanesCount();				
 			}
 		}
 
@@ -286,10 +290,10 @@ private static final double PADDING = 10;
 		double min_y = 1000;
 		for (RoadSegment road : road_segments) {
 			if (road.getStartPosition().getY() < min_y) {
-				min_y = road.getStartPosition().getY() - road.getLaneWidth() * road.getBackwardLanesCount() - PADDING;				
+				min_y = road.getStartPosition().getY() - road.getLaneWidth() * road.getBackwardLanesCount();				
 			}
 			if (road.getEndPosition().getY() < min_y) {
-				min_y = road.getEndPosition().getY() - road.getLaneWidth() * road.getBackwardLanesCount() - PADDING;				
+				min_y = road.getEndPosition().getY() - road.getLaneWidth() * road.getBackwardLanesCount();				
 			}
 		}
 
@@ -307,7 +311,7 @@ private static final double PADDING = 10;
 		double max_x = 0;
 		for (Car car : cars) {
 			if (car.getPosition().getX() > max_x) {
-				max_x = car.getPosition().getX() + car.getLength() + PADDING;				
+				max_x = car.getPosition().getX() + car.getLength();				
 			}
 		}
 		
@@ -325,7 +329,7 @@ private static final double PADDING = 10;
 		double max_y = 0;
 		for (Car car : cars) {
 			if (car.getPosition().getY() > max_y) {
-				max_y = car.getPosition().getY() + car.getLength() + PADDING;				
+				max_y = car.getPosition().getY() + car.getLength();				
 			}			
 		}
 		return max_y;
@@ -342,7 +346,7 @@ private static final double PADDING = 10;
 		double min_x = 1000;
 		for (Car car : cars) {
 			if (car.getPosition().getX() < min_x) {
-				min_x = car.getPosition().getX() - car.getLength() - PADDING;				
+				min_x = car.getPosition().getX() - car.getLength();				
 			}
 		}
 
@@ -360,7 +364,7 @@ private static final double PADDING = 10;
 		double min_y = 1000;
 		for (Car car : cars) {
 			if (car.getPosition().getY() < min_y) {
-				min_y = car.getPosition().getY() - car.getLength() - PADDING;				
+				min_y = car.getPosition().getY() - car.getLength();				
 			}
 		}
 
