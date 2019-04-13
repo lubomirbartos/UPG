@@ -1,3 +1,4 @@
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -5,6 +6,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 import javax.swing.JComponent;
@@ -29,6 +31,7 @@ public class Traffic extends JComponent {
 	 * @param Storage for coordinates transformations.
 	 */
 	View view;
+	private int steps = 0;
 	
 	/*
 	 * Constructor.
@@ -93,9 +96,9 @@ public class Traffic extends JComponent {
 			);
 		
 		g2d.setColor(Color.GRAY);
-		g2d.fill(road_shape);
+//		g2d.fill(road_shape);
 		g2d.setColor(Color.BLACK);
-		g2d.fill(separator_shape);
+//		g2d.fill(separator_shape);
 
 		g2d.setTransform(old_transform);
 		
@@ -145,7 +148,7 @@ public class Traffic extends JComponent {
        	start_position = get_start_road_position(lane.getStartLaneNumber(), lane.getStartRoad());
     	end_position = get_end_road_position(lane.getEndLaneNumber(), lane.getEndRoad());
 
-		lane_width = lane.getStartRoad().getLaneWidth()/2;
+		lane_width = lane.getStartRoad().getLaneWidth();
 		odvesna_x = end_position.getX() - start_position.getX(); 
 		odvesna_y = end_position.getY() - start_position.getY(); 
 
@@ -170,8 +173,13 @@ public class Traffic extends JComponent {
 				view.scale(lane_length),
 				view.scale(lane_width)
 			);
+		
+		Line2D lane_line = new Line2D.Double(0, 0, view.scale(lane_length), 0);
+		g2d.setStroke(new BasicStroke((int)lane_width));
+
 		g2d.setColor(Color.GRAY);
-		g2d.fill(lane_rectangle);
+//		g2d.fill(lane_rectangle);
+		g2d.draw(lane_line);
 		g2d.setTransform(old_transform);		
 	}
 
@@ -240,10 +248,11 @@ public class Traffic extends JComponent {
 		double separator_width = road.getLaneSeparatorWidth();
 
 		if (lane_number < 0) {
-			shift = lane_width*(lane_number) + separator_width/2 - lane_width/2;
+			shift = lane_width*(lane_number - 1) + separator_width;
 		} else {
-			shift = lane_width*(lane_number) + separator_width/2 - 3*lane_width/2;
+			shift = lane_width*(lane_number - 1);
 		}
+		
 
 		double odvesna_x = end.getX() - start.getX(); 
 		double odvesna_y = end.getY() - start.getY(); 
@@ -266,13 +275,14 @@ public class Traffic extends JComponent {
 			shift_x = shift*Math.cos(-Math.PI/2 - rotation);	
 			shift_y = shift*Math.sin(-Math.PI/2 - rotation);
 		}
+		
 				
-		if (shift_x > -0.01 && shift_x < 0.01) {
-			shift_x = 0;
-		}
-		if (shift_y > -0.01 && shift_y < 0.01) {
-			shift_y = 0;
-		}
+//		if (shift_x > -0.01 && shift_x < 0.01) {
+//			shift_x = 0;
+//		}
+//		if (shift_y > -0.01 && shift_y < 0.01) {
+//			shift_y = 0;
+//		}
 
     	result[0] = shift_x;
     	result[1] = shift_y;
@@ -285,10 +295,9 @@ public class Traffic extends JComponent {
 	 * @param Car car        car
 	 * @param Graphics2D g2d graphics context
 	 * 
-	 * @return                 double[2]: [0] = x shift, [1] = y shift
 	 */
 	private void draw_car(Car car, Graphics2D g2d) {
-		double default_car_size = 1.5;
+		int default_car_size = 2;
 		double orientation = car.getOrientation();
 		double length = car.getLength();
 		Point2D position_front = car.getPosition();
@@ -297,7 +306,7 @@ public class Traffic extends JComponent {
 		
 		g2d.translate(view.x(position_front.getX()) - view.scale(length/2), view.y(position_front.getY())); // stred auta na 0,0
 		g2d.rotate(orientation);
-		g2d.translate(-view.scale(length)/2, view.scale(-default_car_size/2)); // zadni levy roh auta na 0,0
+		g2d.translate(-view.scale(length)/2, 0); // zadni levy roh auta na 0,0
 
 		car_shape = new Rectangle(
 				0, 
@@ -306,8 +315,13 @@ public class Traffic extends JComponent {
 				view.scale(default_car_size) 
 		);	
 		
+		
+		Line2D car_line = new Line2D.Double(0, 0, view.scale(length), 0);
+		
+		g2d.setStroke(new BasicStroke(default_car_size));
 		g2d.setColor(Color.YELLOW);
-		g2d.fill(car_shape);
+		g2d.draw(car_line);
+//		g2d.fill(car_shape);
 		g2d.setTransform(old_transform);		
 	}
 
@@ -398,6 +412,9 @@ public class Traffic extends JComponent {
 		this.road_segments = simulator.getRoadSegments();
 		this.crossroads = simulator.getCrossroads();
 		this.cars = simulator.getCars();
-		this.view.update_view(simulator);
+//		if (steps  % 10 == 0 || steps == 1) { // jednou za nekolik kroku update
+			this.view.update_view(simulator);			
+//		}
+		steps++;
 	}
 }

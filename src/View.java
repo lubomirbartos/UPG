@@ -4,35 +4,36 @@ import TrafficSim.Simulator;
 
 public class View {
 	
+private static final double PADDING = 10;
 /*
  * Here are stored scaling and offset information and methods for x and y transformations.
  */
-	private double model_width;
-	private double model_height;	
-	private double window_width;
-	private double window_height;
+	private double model_width = 0;
+	private double model_height = 0;	
+	private double window_width = 0;
+	private double window_height = 0;
 	private double scale_x; // timhle budeme nasobit souradnice modelu ze simulatoru
 	private double scale_y;
 	private double scale;	
 	private double offset_x;
 	private double offset_y;
-	private double negative_offset_x;
-	private double negative_offset_y;
+	private double negative_offset_x = 1000;
+	private double negative_offset_y = 1000;
 	
 	
-	/*
-	 * Constructor for view.
-	 * 
-	 * @param double model_width  model width
-	 * @param double model_height model height
-	 */
-	public View(double model_width, double model_height, double minimum_x, double minimum_y) {
-		this.model_width = model_width;
-		this.model_height = model_height;
-		this.negative_offset_x = minimum_x;
-		this.negative_offset_y = minimum_y;
-	}
-	
+//	/*
+//	 * Constructor for view.
+//	 * 
+//	 * @param double model_width  model width
+//	 * @param double model_height model height
+//	 */
+//	public View(double model_width, double model_height, double minimum_x, double minimum_y) {
+//		this.model_width = model_width;
+//		this.model_height = model_height;
+//		this.negative_offset_x = minimum_x;
+//		this.negative_offset_y = minimum_y;
+//	}
+//	
 	/*
 	 * Constructor for view.
 	 * 
@@ -46,10 +47,7 @@ public class View {
 		this.window_height = 640;
 		this.offset_x = 0;
 		this.offset_y = 0;
-		model_width = find_max_x(simulator);
-		model_height = find_max_y(simulator);
-		negative_offset_x = find_min_x(simulator);
-		negative_offset_y = find_min_y(simulator);			
+		update_view(simulator);
 
 	}
 	
@@ -63,7 +61,7 @@ public class View {
 	 * @param double x model x coordinate
 	 */
 	public int x(double x) {
-		return (int) (x * this.get_scale() + this.get_offset_x() - negative_offset_x * this.get_scale()/2);
+		return (int) ((x - negative_offset_x) * this.get_scale() + this.get_offset_x());
 	}
 	
 	/*
@@ -72,7 +70,7 @@ public class View {
 	 * @param double y model y coordinate
 	 */
 	public int y(double y) {
-		return (int) (y * this.get_scale() + this.get_offset_y() - negative_offset_y * this.get_scale()/2);
+		return (int) ((y - negative_offset_y) * this.get_scale() + this.get_offset_y());
 	}
 
 	/*
@@ -109,91 +107,113 @@ public class View {
 	 * @param double model_height model height
 	 */
 	public void update_view(Simulator simulator) {
-		double max_x = find_max_x(simulator);
-		double max_y = find_max_y(simulator);
-		double min_x = find_min_x(simulator);
-		double min_y = find_min_y(simulator);
-		if (Math.abs(model_width - max_x) > 10) {
-			model_width = max_x;
-		}
+//		for (int i = 0; i < 10; i++) {
+//			simulator.nextStep(1);
+	
+			double max_x = find_max_x(simulator);
+			double max_y = find_max_y(simulator);
+			double min_x = find_min_x(simulator);
+			double min_y = find_min_y(simulator);
+			
+			double width = Math.abs(max_x) + Math.abs(min_x);
+			double height = Math.abs(max_y) + Math.abs(min_y);
+			
+			if (negative_offset_x > min_x) {
+				negative_offset_x = min_x;
+			}
+			
+			if (negative_offset_y > min_y) {
+				negative_offset_y = min_y;
+			}
 
-		if (Math.abs(model_height - max_y) > 10) {
-			model_height = max_y;
-		}
+			
+			if (model_width < width) {
+				model_width = width - negative_offset_x;
+			}
+	
+			if (model_height < height) {
+				model_height = height - negative_offset_y;
+			}
 
-		if (Math.abs(negative_offset_x - min_x) > 10) {
-			negative_offset_x = min_x;
-			model_width += negative_offset_x;
-		}
+			
+			
+	
+//		}
+//		simulator.nextStep(-10);
 
-		if (Math.abs(negative_offset_y - min_y) > 10) {
-			negative_offset_y = min_y;
-			model_height += negative_offset_y;
-		}
 	}
 	
 	
 
 	private double find_min_y(Simulator simulator) {
-		double minimum_y = 0;
+		double minimum_y = 1000;
 		double y;
-		y = find_min_car_y(simulator.getCars());
-		if (y < minimum_y) {
-			minimum_y = y;
-		}
+//		y = find_min_car_y(simulator.getCars());
+//		if (y < minimum_y) {
+//			minimum_y = y;
+//		}
 		
 		y = find_min_road_y(simulator.getRoadSegments());
 		if (y < minimum_y) {
 			minimum_y = y;
 		}
+			
+
 
 		return minimum_y;
 	}
 
 	private double find_min_x(Simulator simulator) {
-		double minimum_x = 0;
+		double minimum_x = 1000;
 		double x;
-		x = find_min_car_x(simulator.getCars());
-		if (x < minimum_x) {
-			minimum_x = x;
-		}
 		
+//		x = find_min_car_x(simulator.getCars());
+//		if (x < minimum_x) {
+//			minimum_x = x;
+//		}
 		x = find_min_road_x(simulator.getRoadSegments());
 		if (x < minimum_x) {
 			minimum_x = x;
 		}
+			
+
 		
 		return minimum_x;
 	}
 
 	private double find_max_y(Simulator simulator) {
-		double maximum_y = 0;
+		double maximum_y = -1000;
 		double y;
-		y = find_max_car_y(simulator.getCars());
-		if (y > maximum_y) {
-			maximum_y = y;
-		}
+		
+//		y = find_max_car_y(simulator.getCars());
+//		if (y > maximum_y) {
+//			maximum_y = y;
+//		}
 		
 		y = find_max_road_y(simulator.getRoadSegments());
 		if (y > maximum_y) {
 			maximum_y = y;
 		}
 		
+		
 		return maximum_y;
 	}
 
 	private double find_max_x(Simulator simulator) {
-		double maximum_x = 0;
+		double maximum_x = -1000;
 		double x;
-		x = find_max_car_x(simulator.getCars());
-		if (x > maximum_x) {
-			maximum_x = x;
-		}
+		
+//		x = find_max_car_x(simulator.getCars());
+//		if (x > maximum_x) {
+//			maximum_x = x;
+//		}
 		
 		x = find_max_road_x(simulator.getRoadSegments());
 		if (x > maximum_x) {
 			maximum_x = x;
 		}
+			
+
 		
 		return maximum_x;
 	}
@@ -225,14 +245,16 @@ public class View {
 	 * @return                            maximum model y
 	 */
 	public static double find_max_road_y(RoadSegment[] road_segments) {
-		double max_y = 0;
+		double max_y = -1000;
 		for (RoadSegment road : road_segments) {
 			if (road.getStartPosition().getY() > max_y) {
-				max_y = road.getStartPosition().getY() + road.getLaneWidth() * road.getBackwardLanesCount();				
+				max_y = road.getStartPosition().getY();				
 			}
 			if (road.getEndPosition().getY() > max_y) {
-				max_y = road.getEndPosition().getY() + road.getLaneWidth() * road.getBackwardLanesCount();				
+				max_y = road.getEndPosition().getY();				
 			}
+			max_y += PADDING;//road.getLaneWidth() * road.getBackwardLanesCount();
+
 		}
 		return max_y;
 	}
@@ -246,14 +268,15 @@ public class View {
 	 * @return                            maximum model x
 	 */
 	public static double find_max_road_x(RoadSegment[] road_segments) {
-		double max_x = 0;
+		double max_x = -1000;
 		for (RoadSegment road : road_segments) {
 			if (road.getStartPosition().getX() > max_x) {
-				max_x = road.getStartPosition().getX() + road.getLaneWidth() * road.getBackwardLanesCount();				
+				max_x = road.getStartPosition().getX();				
 			}
 			if (road.getEndPosition().getX() > max_x) {
-				max_x = road.getEndPosition().getX() + road.getLaneWidth() * road.getBackwardLanesCount();				
+				max_x = road.getEndPosition().getX();				
 			}
+			max_x += PADDING;//road.getLaneWidth() * road.getBackwardLanesCount();
 		}
 		return max_x;
 	}
@@ -269,11 +292,12 @@ public class View {
 		double min_x = 1000;
 		for (RoadSegment road : road_segments) {
 			if (road.getStartPosition().getX() < min_x) {
-				min_x = road.getStartPosition().getX() - road.getLaneWidth() * road.getBackwardLanesCount();				
+				min_x = road.getStartPosition().getX();				
 			}
 			if (road.getEndPosition().getX() < min_x) {
-				min_x = road.getEndPosition().getX() - road.getLaneWidth() * road.getBackwardLanesCount();				
+				min_x = road.getEndPosition().getX();				
 			}
+			min_x -= PADDING;//road.getLaneWidth() * road.getBackwardLanesCount();
 		}
 
 		return min_x;
@@ -290,11 +314,12 @@ public class View {
 		double min_y = 1000;
 		for (RoadSegment road : road_segments) {
 			if (road.getStartPosition().getY() < min_y) {
-				min_y = road.getStartPosition().getY() - road.getLaneWidth() * road.getBackwardLanesCount();				
+				min_y = road.getStartPosition().getY();				
 			}
 			if (road.getEndPosition().getY() < min_y) {
-				min_y = road.getEndPosition().getY() - road.getLaneWidth() * road.getBackwardLanesCount();				
+				min_y = road.getEndPosition().getY();				
 			}
+			min_y -= PADDING;//road.getLaneWidth() * road.getBackwardLanesCount();
 		}
 
 		return min_y;
@@ -308,7 +333,7 @@ public class View {
 	 * @return           maximum model x
 	 */
 	public static double find_max_car_x(Car[] cars) {
-		double max_x = 0;
+		double max_x = -1000;
 		for (Car car : cars) {
 			if (car.getPosition().getX() > max_x) {
 				max_x = car.getPosition().getX() + car.getLength();				
@@ -326,7 +351,7 @@ public class View {
 	 * @return           maximum model y
 	 */
 	public static double find_max_car_y(Car[] cars) {
-		double max_y = 0;
+		double max_y = -1000;
 		for (Car car : cars) {
 			if (car.getPosition().getY() > max_y) {
 				max_y = car.getPosition().getY() + car.getLength();				

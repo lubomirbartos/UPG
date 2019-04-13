@@ -72,7 +72,7 @@ public class TrafficDisplay extends JFrame {
 		Timer traffic_updater  = new Timer(100, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				simulator.nextStep(0.5);
+				simulator.nextStep(0.2);
 				traffic.update(simulator);
 				repaint();		
 			}
